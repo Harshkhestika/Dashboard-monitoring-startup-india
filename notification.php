@@ -1,4 +1,5 @@
 <?php
+// <!-- hello -->
 session_start();
 
 // Redirect to login if not logged in
@@ -940,7 +941,7 @@ $unread_count = 8;
                     }, 5000);
                 },
                 
-                
+
                 viewPreviewNotification() {
                     // In a real app, this would navigate to the relevant page
                     this.showPreview = false;
