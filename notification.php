@@ -28,57 +28,6 @@ $user = $result->fetch_assoc();
 $stmt->close();
 
 // Get notifications
-// In a real implementation, you would fetch notifications from the database
-// with pagination, filtering, etc.
-/*
-$page = isset($_GET['page']) ? intval($_GET['page']) : 1;
-$limit = 10;
-$offset = ($page - 1) * $limit;
-$filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
-
-$where_clause = "";
-if ($filter === 'unread') {
-    $where_clause = " AND is_read = 0";
-} else if ($filter === 'system') {
-    $where_clause = " AND type = 'system'";
-} else if ($filter === 'applications') {
-    $where_clause = " AND type = 'application'";
-} else if ($filter === 'important') {
-    $where_clause = " AND priority = 'high'";
-}
-
-$stmt = $conn->prepare("
-    SELECT * FROM notifications 
-    WHERE user_id = ? OR user_id IS NULL $where_clause
-    ORDER BY created_at DESC LIMIT ? OFFSET ?
-");
-$stmt->bind_param("iii", $user_id, $limit, $offset);
-$stmt->execute();
-$notifications = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-$stmt->close();
-
-// Count total notifications for pagination
-$stmt = $conn->prepare("
-    SELECT COUNT(*) as total FROM notifications 
-    WHERE user_id = ? OR user_id IS NULL $where_clause
-");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$total = $stmt->get_result()->fetch_assoc()['total'];
-$stmt->close();
-
-// Count unread notifications
-$stmt = $conn->prepare("
-    SELECT COUNT(*) as unread FROM notifications 
-    WHERE (user_id = ? OR user_id IS NULL) AND is_read = 0
-");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$unread_count = $stmt->get_result()->fetch_assoc()['unread'];
-$stmt->close();
-*/
-
-// Since we don't have actual database, we'll simulate notifications
 $unread_count = 8;
 ?>
 
@@ -128,36 +77,25 @@ $unread_count = 8;
         /* Notification specific styles */
         .notification-card {
             transition: all 0.3s ease;
+            position: relative;
         }
         .notification-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
         .notification-unread {
             border-left-width: 4px;
         }
-        .notification-read {
-            opacity: 0.8;
-        }
-        .tab-active {
-            color: #ed8936;
-            border-bottom: 2px solid #ed8936;
-        }
         
         /* Animation for new notifications */
-        @keyframes newNotificationPulse {
-            0% {
-                background-color: rgba(237, 137, 54, 0.1);
-            }
-            50% {
-                background-color: rgba(237, 137, 54, 0.2);
-            }
-            100% {
-                background-color: rgba(237, 137, 54, 0.1);
-            }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
         }
         .new-notification {
-            animation: newNotificationPulse 2s ease-in-out;
+            animation: pulse 2s ease-in-out;
+            box-shadow: 0 0 0 2px rgba(237, 137, 54, 0.3);
         }
         
         /* For PDF optimization */
@@ -222,10 +160,9 @@ $unread_count = 8;
                     <i class="fas fa-book w-6"></i>
                     <span class="ml-2">Resources</span>
                 </div>
-                
-        </a>
+                </a>
 
-        <a href="notification.php">
+                <a href="notification.php">
                 <div id="admin-notifications-link" class="sidebar-item sidebar-active flex items-center py-3 px-4 text-gray-700 cursor-pointer">
                     <i class="fas fa-bell w-6"></i>
                     <span class="ml-2">Notifications</span>
@@ -238,10 +175,6 @@ $unread_count = 8;
                         <span class="ml-2">Profile</span>
                     </div>
                 </a>
-                <!-- <div id="admin-settings-link" class="sidebar-item flex items-center py-3 px-4 text-gray-700 cursor-pointer">
-                    <i class="fas fa-cog w-6"></i>
-                    <span class="ml-2">Settings</span>
-                </div> -->
 
                 <a href="newstartup.html">
                 <div class="sidebar-item flex items-center py-3 px-4 text-gray-700 cursor-pointer">
@@ -293,13 +226,6 @@ $unread_count = 8;
                         <p class="text-sm text-gray-500 mt-1">Manage your notifications and preferences</p>
                     </div>
                     <div class="flex space-x-3">
-
-
-                        <!-- <button @click="markAllAsRead" class="bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-lg transition-all flex items-center">
-                            <i class="fas fa-check-double mr-2"></i> Mark All as Read
-                        </button> -->
-
-
                         <button @click="showNotificationPreferences = !showNotificationPreferences" 
                                 class="bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-lg transition-all flex items-center">
                             <i class="fas fa-cog mr-2"></i> Preferences
@@ -321,6 +247,41 @@ $unread_count = 8;
                         </div>
                     </div>
                     
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-sm text-gray-500">Unread</p>
+                                <h3 class="text-2xl font-bold text-gray-800" x-text="unreadCount"></h3>
+                            </div>
+                            <div class="p-3 rounded-full bg-orange-100 text-orange-500">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-sm text-gray-500">Today</p>
+                                <h3 class="text-2xl font-bold text-gray-800" x-text="todayCount"></h3>
+                            </div>
+                            <div class="p-3 rounded-full bg-blue-100 text-blue-500">
+                                <i class="fas fa-calendar-day"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-sm text-gray-500">High Priority</p>
+                                <h3 class="text-2xl font-bold text-gray-800" x-text="importantCount"></h3>
+                            </div>
+                            <div class="p-3 rounded-full bg-red-100 text-red-500">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Main Notification Panel -->
@@ -332,11 +293,50 @@ $unread_count = 8;
                                 class="px-4 py-2 font-medium text-gray-600 hover:text-orange-500 focus:outline-none transition-colors">
                             All
                         </button>
-                        
+                        <button @click="currentFilter = 'unread'" 
+                                :class="{'tab-active': currentFilter === 'unread'}"
+                                class="px-4 py-2 font-medium text-gray-600 hover:text-orange-500 focus:outline-none transition-colors">
+                            Unread
+                        </button>
+                        <button @click="currentFilter = 'system'" 
+                                :class="{'tab-active': currentFilter === 'system'}"
+                                class="px-4 py-2 font-medium text-gray-600 hover:text-orange-500 focus:outline-none transition-colors">
+                            System
+                        </button>
+                        <button @click="currentFilter = 'applications'" 
+                                :class="{'tab-active': currentFilter === 'applications'}"
+                                class="px-4 py-2 font-medium text-gray-600 hover:text-orange-500 focus:outline-none transition-colors">
+                            Applications
+                        </button>
+                        <button @click="currentFilter = 'important'" 
+                                :class="{'tab-active': currentFilter === 'important'}"
+                                class="px-4 py-2 font-medium text-gray-600 hover:text-orange-500 focus:outline-none transition-colors">
+                            Important
+                        </button>
                     </div>
                     
-                    
-     
+                    <!-- Search and Bulk Actions -->
+                    <div class="p-4 border-b flex flex-col md:flex-row md:items-center justify-between">
+                        <div class="relative mb-4 md:mb-0 md:w-64">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                            <input type="text" x-model="searchQuery" 
+                                   class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm" 
+                                   placeholder="Search notifications...">
+                        </div>
+                        <div class="flex space-x-3">
+                            <button @click="markSelectedAsRead" :disabled="selectedNotifications.length === 0" 
+                                    :class="{'opacity-50 cursor-not-allowed': selectedNotifications.length === 0}"
+                                    class="bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-lg transition-all flex items-center">
+                                <i class="fas fa-check-double mr-2"></i> Mark Selected as Read
+                            </button>
+                            <button @click="deleteSelected" :disabled="selectedNotifications.length === 0" 
+                                    :class="{'opacity-50 cursor-not-allowed': selectedNotifications.length === 0}"
+                                    class="bg-red-100 hover:bg-red-200 text-red-700 py-2 px-4 rounded-lg transition-all flex items-center">
+                                <i class="fas fa-trash mr-2"></i> Delete Selected
+                            </button>
+                        </div>
                     </div>
                     
                     <!-- Notifications List -->
@@ -347,34 +347,35 @@ $unread_count = 8;
                                 <i class="fas fa-bell-slash text-gray-400 text-3xl"></i>
                             </div>
                             <h3 class="text-xl font-medium text-gray-800 mb-2">No notifications found</h3>
-                            <p class="text-gray-500">There are no notifications matching your current filter.<?php echo ($user->$name); ?></p>
+                            <p class="text-gray-500">There are no notifications matching your current filter.</p>
                         </div>
                         
-                        <!-- Notifications -->
+                        <!-- Notifications Cards -->
                         <template x-for="notification in filteredNotifications" :key="notification.id">
                             <div :class="{
-                                    'notification-card rounded-lg shadow-sm mb-4 bg-white': true,
-                                    'notification-unread border-l-4': !notification.is_read,
-                                    'notification-read': notification.is_read,
-                                    'border-orange-500': notification.type === 'system' && !notification.is_read,
-                                    'border-blue-500': notification.type === 'application' && !notification.is_read,
-                                    'border-green-500': notification.type === 'success' && !notification.is_read,
-                                    'border-red-500': notification.type === 'alert' && !notification.is_read,
-                                    'border-yellow-500': notification.type === 'warning' && !notification.is_read,
-                                    'border-purple-500': notification.type === 'event' && !notification.is_read,
+                                    'notification-card rounded-lg border mb-4 bg-white p-4 shadow-sm': true,
+                                    'border-l-4': !notification.is_read,
+                                    'border-gray-200': notification.is_read,
+                                    'border-orange-500': !notification.is_read && notification.type === 'system',
+                                    'border-blue-500': !notification.is_read && notification.type === 'application',
+                                    'border-green-500': !notification.is_read && notification.type === 'success',
+                                    'border-red-500': !notification.is_read && notification.type === 'alert',
+                                    'border-yellow-500': !notification.is_read && notification.type === 'warning',
+                                    'border-purple-500': !notification.is_read && notification.type === 'event',
+                                    'opacity-75': notification.is_read,
                                     'new-notification': notification.isNew
                                 }">
-                                <div class="p-4 flex items-start">
+                                <div class="flex items-start">
                                     <!-- Checkbox -->
-                                    <div class="flex-shrink-0 mr-3">
+                                    <div class="flex-shrink-0 mr-3 pt-1">
                                         <input type="checkbox" :value="notification.id" x-model="selectedNotifications" 
-                                               class="form-checkbox text-orange-500 h-5 w-5">
+                                               class="form-checkbox h-5 w-5 text-orange-500 rounded border-gray-300">
                                     </div>
                                     
                                     <!-- Icon -->
                                     <div class="flex-shrink-0 mr-4">
                                         <div :class="{
-                                                'rounded-full p-2 flex items-center justify-center': true,
+                                                'rounded-full h-10 w-10 flex items-center justify-center': true,
                                                 'bg-orange-100 text-orange-500': notification.type === 'system',
                                                 'bg-blue-100 text-blue-500': notification.type === 'application',
                                                 'bg-green-100 text-green-500': notification.type === 'success',
@@ -383,80 +384,92 @@ $unread_count = 8;
                                                 'bg-purple-100 text-purple-500': notification.type === 'event'
                                             }">
                                             <i :class="{
-                                                    'fas': true,
+                                                    'fas fa-lg': true,
                                                     'fa-bell': notification.type === 'system',
                                                     'fa-file-alt': notification.type === 'application',
                                                     'fa-check-circle': notification.type === 'success',
                                                     'fa-exclamation-triangle': notification.type === 'alert',
                                                     'fa-exclamation-circle': notification.type === 'warning',
                                                     'fa-calendar-alt': notification.type === 'event'
-                                                }">
-                                            </i>
+                                                }"></i>
                                         </div>
                                     </div>
                                     
                                     <!-- Content -->
-                                    <div class="flex-1">
+                                    <div class="flex-1 min-w-0">
                                         <div class="flex justify-between items-start mb-1">
-                                            <h4 class="text-sm font-medium text-gray-900" x-text="notification.title"></h4>
+                                            <h4 class="text-base font-medium text-gray-900 truncate" x-text="notification.title"></h4>
                                             <div class="flex items-center">
-                                                <span class="text-xs text-gray-500 mr-2" x-text="formatTimeAgo(notification.created_at)"></span>
-                                                <template x-if="notification.priority === 'high'">
-                                                    <span class="bg-red-100 text-red-800 text-xs font-semibold px-2 py-0.5 rounded">High</span>
-                                                </template>
-                                                <template x-if="notification.priority === 'medium'">
-                                                    <span class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2 py-0.5 rounded">Medium</span>
-                                                </template>
+                                                <span class="text-xs text-gray-500 whitespace-nowrap ml-2" x-text="formatTimeAgo(notification.created_at)"></span>
                                                 <button @click="toggleNotificationOptions(notification.id)" class="ml-2 text-gray-400 hover:text-gray-600">
                                                     <i class="fas fa-ellipsis-v"></i>
                                                 </button>
                                             </div>
                                         </div>
-                                        <p class="text-sm text-gray-600" x-text="notification.message"></p>
+                                        <p class="text-sm text-gray-600 mb-2" x-text="notification.message"></p>
+                                        
+                                        <!-- Priority Tag -->
+                                        <div class="mb-2">
+                                            <template x-if="notification.priority === 'high'">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                    High Priority
+                                                </span>
+                                            </template>
+                                            <template x-if="notification.priority === 'medium'">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                    Medium Priority
+                                                </span>
+                                            </template>
+                                            <template x-if="notification.priority === 'low'">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                    Low Priority
+                                                </span>
+                                            </template>
+                                        </div>
                                         
                                         <!-- Action Buttons -->
-                                        <div class="mt-2 flex flex-wrap gap-2">
+                                        <div class="flex flex-wrap gap-2 mt-3">
                                             <template x-if="notification.type === 'application'">
-                                                <button class="text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 px-2 py-1 rounded transition-colors">
-                                                    View Application
+                                                <button class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1 rounded-md transition-colors">
+                                                    <i class="fas fa-eye mr-1"></i> View Application
                                                 </button>
                                             </template>
                                             <template x-if="notification.type === 'alert' || notification.type === 'warning'">
-                                                <button class="text-xs bg-red-50 text-red-600 hover:bg-red-100 px-2 py-1 rounded transition-colors">
-                                                    Review Issue
+                                                <button class="text-xs bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1 rounded-md transition-colors">
+                                                    <i class="fas fa-search mr-1"></i> Review Issue
                                                 </button>
                                             </template>
                                             <template x-if="notification.type === 'event'">
-                                                <button class="text-xs bg-purple-50 text-purple-600 hover:bg-purple-100 px-2 py-1 rounded transition-colors">
-                                                    View Event
+                                                <button class="text-xs bg-purple-50 hover:bg-purple-100 text-purple-600 px-3 py-1 rounded-md transition-colors">
+                                                    <i class="fas fa-calendar mr-1"></i> View Event
                                                 </button>
                                             </template>
                                             <template x-if="notification.type === 'success'">
-                                                <button class="text-xs bg-green-50 text-green-600 hover:bg-green-100 px-2 py-1 rounded transition-colors">
-                                                    See Details
+                                                <button class="text-xs bg-green-50 hover:bg-green-100 text-green-600 px-3 py-1 rounded-md transition-colors">
+                                                    <i class="fas fa-info-circle mr-1"></i> See Details
                                                 </button>
                                             </template>
                                             <button @click="markAsRead(notification.id)" x-show="!notification.is_read" 
-                                                    class="text-xs bg-gray-50 text-gray-600 hover:bg-gray-100 px-2 py-1 rounded transition-colors">
-                                                Mark as Read
+                                                    class="text-xs bg-gray-50 hover:bg-gray-100 text-gray-600 px-3 py-1 rounded-md transition-colors">
+                                                <i class="fas fa-check mr-1"></i> Mark as Read
                                             </button>
                                         </div>
                                     </div>
-                                    
-                                    <!-- Options Dropdown -->
-                                    <div x-show="activeOptions === notification.id" 
-                                         @click.away="activeOptions = null"
-                                         class="absolute right-8 mt-8 w-48 bg-white rounded-md shadow-lg py-1 z-10">
-                                        <button @click="markAsRead(notification.id)" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                            Mark as Read
-                                        </button>
-                                        <button @click="snoozeNotification(notification.id)" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                            Snooze for 24 hours
-                                        </button>
-                                        <button @click="deleteNotification(notification.id)" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
-                                            Delete
-                                        </button>
-                                    </div>
+                                </div>
+                                
+                                <!-- Options Dropdown -->
+                                <div x-show="activeOptions === notification.id" 
+                                     @click.away="activeOptions = null"
+                                     class="absolute right-4 mt-1 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
+                                    <button @click="markAsRead(notification.id)" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <i class="fas fa-check mr-2"></i> Mark as Read
+                                    </button>
+                                    <button @click="snoozeNotification(notification.id)" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <i class="fas fa-clock mr-2"></i> Snooze for 24 hours
+                                    </button>
+                                    <button @click="deleteNotification(notification.id)" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                        <i class="fas fa-trash mr-2"></i> Delete
+                                    </button>
                                 </div>
                             </div>
                         </template>
@@ -914,42 +927,19 @@ $unread_count = 8;
                             this.notifications[index].isNew = false;
                         }
                     }, 5000);
-                    
-                    /* In a real implementation, you would use WebSockets or Server-Sent Events:
-                    
-                    // Using WebSockets
-                    const socket = new WebSocket('wss://your-server.com/ws');
-                    socket.onmessage = (event) => {
-                        const notification = JSON.parse(event.data);
-                        this.notifications.unshift({
-                            ...notification,
-                            isNew: true
-                        });
-                        this.showNotificationPreview(notification);
-                    };
-                    
-                    // Or using Server-Sent Events (SSE)
-                    const eventSource = new EventSource('https://your-server.com/events');
-                    eventSource.onmessage = (event) => {
-                        const notification = JSON.parse(event.data);
-                        this.notifications.unshift({
-                            ...notification,
-                            isNew: true
-                        });
-                        this.showNotificationPreview(notification);
-                    };
-                    */
                 },
                 
                 showNotificationPreview(notification) {
                     this.previewNotification = notification;
                     this.showPreview = true;
                     
+
                     // Auto-dismiss after 5 seconds
                     setTimeout(() => {
                         this.showPreview = false;
                     }, 5000);
                 },
+                
                 
                 viewPreviewNotification() {
                     // In a real app, this would navigate to the relevant page
@@ -971,15 +961,6 @@ $unread_count = 8;
                     if (index !== -1) {
                         this.notifications[index].is_read = true;
                     }
-                    
-                    /* 
-                    PHP implementation would be something like:
-                    
-                    $stmt = $conn->prepare("UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?");
-                    $stmt->bind_param("ii", $notification_id, $user_id);
-                    $stmt->execute();
-                    $stmt->close();
-                    */
                 },
                 
                 markAllAsRead() {
@@ -987,15 +968,6 @@ $unread_count = 8;
                     this.notifications.forEach(notification => {
                         notification.is_read = true;
                     });
-                    
-                    /*
-                    PHP implementation:
-                    
-                    $stmt = $conn->prepare("UPDATE notifications SET is_read = 1 WHERE user_id = ? OR user_id IS NULL");
-                    $stmt->bind_param("i", $user_id);
-                    $stmt->execute();
-                    $stmt->close();
-                    */
                 },
                 
                 markSelectedAsRead() {
@@ -1009,16 +981,6 @@ $unread_count = 8;
                     
                     this.selectedNotifications = [];
                     this.selectAll = false;
-                    
-                    /*
-                    PHP implementation:
-                    
-                    $ids = implode(',', array_map('intval', $selected_ids));
-                    $stmt = $conn->prepare("UPDATE notifications SET is_read = 1 WHERE id IN ($ids) AND (user_id = ? OR user_id IS NULL)");
-                    $stmt->bind_param("i", $user_id);
-                    $stmt->execute();
-                    $stmt->close();
-                    */
                 },
                 
                 deleteNotification(id) {
@@ -1028,15 +990,6 @@ $unread_count = 8;
                         this.notifications.splice(index, 1);
                     }
                     this.activeOptions = null;
-                    
-                    /*
-                    PHP implementation:
-                    
-                    $stmt = $conn->prepare("DELETE FROM notifications WHERE id = ? AND user_id = ?");
-                    $stmt->bind_param("ii", $notification_id, $user_id);
-                    $stmt->execute();
-                    $stmt->close();
-                    */
                 },
                 
                 deleteSelected() {
@@ -1048,32 +1001,12 @@ $unread_count = 8;
                     
                     this.selectedNotifications = [];
                     this.selectAll = false;
-                    
-                    /*
-                    PHP implementation:
-                    
-                    $ids = implode(',', array_map('intval', $selected_ids));
-                    $stmt = $conn->prepare("DELETE FROM notifications WHERE id IN ($ids) AND user_id = ?");
-                    $stmt->bind_param("i", $user_id);
-                    $stmt->execute();
-                    $stmt->close();
-                    */
                 },
                 
                 snoozeNotification(id) {
                     // In a real app, this would update the notification to reappear later
                     alert(`Notification snoozed for 24 hours`);
                     this.activeOptions = null;
-                    
-                    /*
-                    PHP implementation:
-                    
-                    $snooze_until = date('Y-m-d H:i:s', strtotime('+24 hours'));
-                    $stmt = $conn->prepare("UPDATE notifications SET snoozed_until = ? WHERE id = ? AND user_id = ?");
-                    $stmt->bind_param("sii", $snooze_until, $notification_id, $user_id);
-                    $stmt->execute();
-                    $stmt->close();
-                    */
                 },
                 
                 toggleSelectAll() {
@@ -1126,16 +1059,6 @@ $unread_count = 8;
                     // In a real app, this would save to the database
                     alert('Notification preferences saved successfully!');
                     this.showNotificationPreferences = false;
-                    
-                    /*
-                    PHP implementation:
-                    
-                    $preferences = json_encode($notificationPreferences);
-                    $stmt = $conn->prepare("UPDATE user_preferences SET notification_settings = ? WHERE user_id = ?");
-                    $stmt->bind_param("si", $preferences, $user_id);
-                    $stmt->execute();
-                    $stmt->close();
-                    */
                 },
                 
                 formatTimeAgo(dateString) {
