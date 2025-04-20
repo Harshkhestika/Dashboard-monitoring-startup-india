@@ -1,0 +1,418 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Join-Startup India</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css">
+    <style>
+        .sidebar-active {
+            background-color: rgba(237, 137, 54, 0.1);
+            border-left: 4px solid #ed8936;
+            color: #ed8936;
+        }
+        .sidebar-item:hover {
+            background-color: rgba(237, 137, 54, 0.05);
+        }
+        .notification-badge {
+            top: 8px;
+            right: 8px;
+        }
+        .form-step {
+            display: none;
+        }
+        .form-step.active {
+            display: block;
+        }
+        .progress-step {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #e2e8f0;
+            color: #4a5568;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+        .progress-step.active {
+            background-color: #ed8936;
+            color: white;
+        }
+        .progress-step.completed {
+            background-color: #48bb78;
+            color: white;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 3px;
+            background-color: #e2e8f0;
+            position: absolute;
+            top: 15px;
+            z-index: 1;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #48bb78;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .floating-label {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        .floating-label input,
+        .floating-label select,
+        .floating-label textarea {
+            width: 100%;
+            height: 3rem;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .floating-label textarea {
+            height: auto;
+            min-height: 6rem;
+        }
+        .floating-label label {
+            position: absolute;
+            top: 0.75rem;
+            left: 0.75rem;
+            color: #a0aec0;
+            transition: all 0.2s ease;
+            pointer-events: none;
+        }
+        .floating-label input:focus,
+        .floating-label select:focus,
+        .floating-label textarea:focus {
+            border-color: #ed8936;
+            box-shadow: 0 0 0 3px rgba(237, 137, 54, 0.1);
+        }
+        .floating-label input:focus ~ label,
+        .floating-label input:not(:placeholder-shown) ~ label,
+        .floating-label select:focus ~ label,
+        .floating-label select:not([value=""]):valid ~ label,
+        .floating-label textarea:focus ~ label,
+        .floating-label textarea:not(:placeholder-shown) ~ label {
+            top: -0.5rem;
+            left: 0.5rem;
+            padding: 0 0.25rem;
+            font-size: 0.75rem;
+            background-color: white;
+            color: #ed8936;
+        }
+        .file-input-label {
+            display: block;
+            padding: 0.75rem;
+            background-color: #f7fafc;
+            border: 1px dashed #cbd5e0;
+            border-radius: 0.375rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .file-input-label:hover {
+            background-color: #edf2f7;
+            border-color: #a0aec0;
+        }
+        .file-input {
+            width: 0.1px;
+            height: 0.1px;
+            opacity: 0;
+            overflow: hidden;
+            position: absolute;
+            z-index: -1;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #1a202c;
+            color: white;
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        .auto-save-indicator {
+            display: none;
+            align-items: center;
+            font-size: 0.75rem;
+            color: #68d391;
+        }
+        .auto-save-indicator.saving {
+            color: #f6ad55;
+        }
+        .auto-save-indicator i {
+            margin-right: 0.25rem;
+        }
+        .custom-checkbox {
+            display: flex;
+            align-items: center;
+        }
+        .custom-checkbox input[type="checkbox"] {
+            width: 0;
+            height: 0;
+            opacity: 0;
+            position: absolute;
+        }
+        .custom-checkbox .checkbox-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #cbd5e0;
+            border-radius: 0.25rem;
+            margin-right: 0.5rem;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        .custom-checkbox input[type="checkbox"]:checked ~ .checkbox-icon {
+            background-color: #ed8936;
+            border-color: #ed8936;
+        }
+        .custom-checkbox input[type="checkbox"]:checked ~ .checkbox-icon:after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 0.75rem;
+        }
+        .stepper-dot {
+            transition: all 0.3s ease;
+        }
+        @media print {
+            .sidebar, .header, .no-print {
+                display: none !important;
+            }
+            .ml-64 {
+                margin-left: 0 !important;
+            }
+            .form-step {
+                display: block !important;
+                page-break-inside: avoid;
+            }
+            body {
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            .bg-gray-100 {
+                background-color: white !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <div class="bg-white shadow-md w-64 h-screen overflow-y-auto fixed left-0 top-0 no-print">
+            <div class="p-4">
+                <div class="flex items-center justify-center">
+                    <img src="india.png " class="h-8 w-8 mr-2" alt="Startup India Logo">
+                    <h1 class="text-xl font-bold text-gray-800">Startup <span class="text-orange-500">India</span></h1>
+                </div>
+            </div>
+            <div class="mt-4">
+                <a href="index.php">
+                <div class="sidebar-item flex items-center py-3 px-4 text-gray-700 cursor-pointer">
+                    <i class="fas fa-tachometer-alt w-6"></i>
+                    <span class="ml-2">Dashboard</span>
+                </div>
+                </a>
+
+                <div class="sidebar-item sidebar-active flex items-center py-3 px-4 text-gray-700 cursor-pointer">
+                    <i class="fas fa-plus-circle w-6"></i>
+                    <span class="ml-2">Register Startup</span>
+                </div>
+                <a href="startup-monitoring.php">
+                <div class="sidebar-item flex items-center py-3 px-4 text-gray-700 cursor-pointer">
+                    <i class="fas fa-chart-line w-6"></i>
+                    <span class="ml-2">Startup Monitoring</span>
+                </div>
+                </a>
+
+                <a href="applications.php">
+                <div class="sidebar-item flex items-center py-3 px-4 text-gray-700 cursor-pointer">
+                    <i class="fas fa-file-alt w-6"></i>
+                    <span class="ml-2">Applications</span>
+                </div>
+    </a>
+
+                <a href="resources.php">
+                <div class="sidebar-item flex items-center py-3 px-4 text-gray-700 cursor-pointer">
+                    <i class="fas fa-book w-6"></i>
+                    <span class="ml-2">Resources</span>
+                </div>
+                </a>
+
+                <a href="notification.php">
+                   <div class="sidebar-item flex items-center py-3 px-4 text-gray-700 cursor-pointer">
+                    <i class="fas fa-bell w-6"></i>
+                    <span class="ml-2">Notifications</span>
+                    <span class="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center ml-auto">3</span>
+                </div>
+                </a>
+
+                <a href="profile.php">
+                <div class="sidebar-item flex items-center py-3 px-4 text-gray-700 cursor-pointer">
+                    <i class="fas fa-user w-6"></i>
+                    <span class="ml-2">Profile</span>
+                </div>
+                </a>
+                <div class="sidebar-item flex items-center py-3 px-4 text-gray-700 cursor-pointer">
+                    <i class="fas fa-cog w-6"></i>
+                    <span class="ml-2">Settings</span>
+                </div>
+
+                <a href="login.php">              
+                    <div class="sidebar-item flex items-center py-3 px-4 text-gray-700 cursor-pointer mt-8">
+                    <i class="fas fa-sign-out-alt w-6"></i>
+                    <span class="ml-2">Logout</span>
+                </div>
+                </a>
+
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-x-hidden overflow-y-auto ml-64 bg-gray-100">
+            <!-- Header -->
+            <header class="bg-white shadow-sm py-4 px-6 flex items-center justify-between no-print">
+                <div class="flex items-center">
+                    <i class="fas fa-bars text-gray-500 text-xl cursor-pointer mr-6"></i>
+                    <h3 class="text-lg font-semibold text-gray-800">Register New Startup</h3>
+                </div>
+                <div class="flex items-center">
+                    <!-- <div class="relative mr-4">
+                        <i class="fas fa-search text-gray-500"></i>
+                    </div> -->
+                    <div class="relative mr-4">
+                        <i class="fas fa-bell text-gray-500"></i>
+                        <span class="absolute bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center notification-badge">3</span>
+                    </div>
+                    <div class="flex items-center cursor-pointer">
+                        <img class="h-8 w-8 rounded-full object-cover" src="https://randomuser.me/api/portraits/men/32.jpg" alt="User Profile">
+                        <span class="ml-2 text-sm font-medium text-gray-800">User Name</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Registration Form Container -->
+            <div class="p-6">
+                <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                    <div class="mb-8">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2">Register Your Startup</h2>
+                        <p class="text-gray-600">Complete the form below to register your startup with Startup India. All fields marked with <span class="text-red-500">*</span> are required.</p>
+                    </div>
+
+                   
+                    <!-- Auto Save Indicator -->
+                    <div class="flex justify-end mb-4">
+                        <div id="autoSaveIndicator" class="auto-save-indicator">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Progress saved</span>
+                        </div>
+                    </div>
+
+                    <!-- Registration Form -->
+                    <form id="startupRegistrationForm" method="post" action="register_startup.php" enctype="multipart/form-data">
+    <!-- Step 1: Personal Information -->
+    <h3 class="text-xl font-semibold text-gray-800 mb-6">Startup Information</h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div class="floating-label">
+            <input type="text" id="startup_name" name="startup_name" placeholder=" " required>
+            <label for="startup_name">Startup Name <span class="text-red-500">*</span></label>
+        </div>
+        <div>
+            <label for="sector" class="block text-sm font-medium text-gray-700 mb-1">Sector</label>
+            <select id="sector" name="sector" required
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                <option value="" disabled selected>Select your sector</option>
+                <option value="Technology">Technology</option>
+                <option value="Healthcare">Healthcare</option>
+                <option value="Education">Education</option>
+                <option value="Finance">Finance</option>
+                <option value="Ecommerce">Ecommerce</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div class="floating-label">
+            <input type="date" id="date_applied" name="date_applied" placeholder=" " required>
+            <label for="date_applied">Date Applied <span class="text-red-500">*</span></label>
+        </div>
+        <div class="floating-label">
+            <input type="number" id="revenue" name="revenue" placeholder=" " step="0.01">
+            <label for="revenue">Revenue (in Rs)</label>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div class="floating-label">
+            <input type="email" id="email" name="email" placeholder=" " required>
+            <label for="email">Contact Email <span class="text-red-500">*</span></label>
+        </div>
+        <div class="floating-label">
+
+            <input type="number" id="number" name="job" placeholder=" " required>
+            <label for="number">No. of Jobs offering<span class="text-red-500">*</span></label>
+            </div>
+    </div>
+    
+    <!-- File upload section -->
+    <div class="mb-6">
+        <label class="block text-gray-700 text-sm font-bold mb-2">Business Plan (PDF)</label>
+        <label class="file-input-label">
+            <input type="file" class="file-input" name="business_plan" accept=".pdf">
+            <span class="text-gray-600">Click to upload or drag and drop</span>
+            <span class="block text-sm text-gray-500 mt-1">PDF up to 10MB</span>
+        </label>
+    </div>
+    
+    <div class="flex justify-end">
+        <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+            Submit Application
+        </button>
+    </div>
+</form>
+        </div>
+        </div>
+        </div>
+              </div>
+              <script>
+                // Add this script to show text input when "Other" is selected
+document.getElementById('sector').addEventListener('change', function() {
+    const otherInput = document.getElementById('other_sector_container');
+    if (this.value === 'Other') {
+        otherInput.classList.remove('hidden');
+    } else {
+        otherInput.classList.add('hidden');
+    }
+});
+              </script>              
+                            </body>
+                            </html>
