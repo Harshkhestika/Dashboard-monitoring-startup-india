@@ -38,7 +38,7 @@
                 <nav>
                     <div class="sidebar-item sidebar-active px-6 py-3 flex items-center space-x-3 cursor-pointer">
                         <i class="fas fa-tachometer-alt text-blue-500 w-5"></i>
-                        <span>Dashboard</span>
+                        <span>Dashboards</span>
                     </div>
                     <div class="sidebar-item px-6 py-3 flex items-center space-x-3 cursor-pointer">
                         <i class="fas fa-lightbulb text-blue-400 w-5"></i>
@@ -383,4 +383,5 @@
         });
     </script>
 </body>
+
 </html>
