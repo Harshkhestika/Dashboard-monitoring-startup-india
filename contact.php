@@ -18,7 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $mail = new PHPMailer(true);
 
     try {
-        // Server settings
+        // Server setting
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';          // 🔁 Replace with your SMTP server
         $mail->SMTPAuth   = true;
@@ -164,3 +164,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 </body>
 </html>
+
