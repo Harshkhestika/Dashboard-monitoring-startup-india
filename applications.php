@@ -22,7 +22,7 @@ if ($count_result && $count_result->num_rows > 0) {
     $total_applications = $row['total_applications'];
 }
 
-// Fetch all application data
+// Fetch all application data's
 $sql = "SELECT * FROM startups";
 $result = $conn->query($sql);
 ?>
@@ -166,6 +166,7 @@ $result = $conn->query($sql);
 // Close the database connection
 $conn->close();
 ?>
+
 
 
 
