@@ -3,6 +3,7 @@
         <button id="sidebar-toggle" class="text-gray-500 text-xl cursor-pointer mr-6">
             <i class="fas fa-bars"></i>
         </button>
+        
         <h2 class="text-lg font-medium text-gray-800">
             <?php echo isset($page_title) ? $page_title : 'Dashboard'; ?>
         </h2>
@@ -27,4 +28,5 @@
         document.querySelector('.admin-sidebar').classList.toggle('hidden');
         document.querySelector('.admin-sidebar').classList.toggle('md:block');
     });
+
 </script>
