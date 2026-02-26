@@ -1,5 +1,5 @@
 <?php
-// Database connection's
+// Database connection'
 $host = "localhost";
 $username = "root";
 $password = ""; // update if neededs
@@ -166,6 +166,7 @@ $result = $conn->query($sql);
 // Close the database connection
 $conn->close();
 ?>
+
 
 
 
