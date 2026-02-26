@@ -15,6 +15,7 @@
             <i class="fas fa-bell text-gray-500 cursor-pointer"></i>
             <span class="absolute bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center notification-badge">3</span>
         </div></a>
+        
         <a href="profile.php" class="flex items-center hover:text-blue-500 transition-colors">
             <img class="h-8 w-8 rounded-full object-cover" src="<?php echo !empty($_SESSION['profile_pic']) ? $_SESSION['profile_pic'] : 'harhprofile.png'; ?>" alt="User Profile">
             <span class="ml-2 text-sm font-medium text-gray-800"><?php echo htmlspecialchars($_SESSION['user_name']); ?></span>
@@ -30,4 +31,5 @@
     });
 
 </script>
+
 
