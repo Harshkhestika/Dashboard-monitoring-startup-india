@@ -8,8 +8,8 @@
             <?php echo isset($page_title) ? $page_title : 'Dashboard'; ?>
         </h2>
     </div>
+    
     <div class="flex items-center">
-       
         <a href="notification.php">
         <div class="relative mr-4">
             <i class="fas fa-bell text-gray-500 cursor-pointer"></i>
@@ -30,3 +30,4 @@
     });
 
 </script>
+
