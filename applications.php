@@ -7,6 +7,7 @@ $database = "startup_india";
 
 $conn = new mysqli($host, $username, $password, $database);
 
+
 // Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
@@ -167,6 +168,7 @@ $result = $conn->query($sql);
 // Close the database connection
 $conn->close();
 ?>
+
 
 
 
