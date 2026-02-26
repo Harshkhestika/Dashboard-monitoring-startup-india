@@ -12,6 +12,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+
 // Fetch total applications count's
 $count_sql = "SELECT COUNT(startup_name) AS total_applications FROM startups";
 $count_result = $conn->query($count_sql);
@@ -166,6 +167,7 @@ $result = $conn->query($sql);
 // Close the database connection
 $conn->close();
 ?>
+
 
 
 
