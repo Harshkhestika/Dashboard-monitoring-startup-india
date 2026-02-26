@@ -3,7 +3,7 @@
 $host = "localhost";
 $username = "root";
 $password = ""; // update if neededs
-$database = "startup_india";
+$database = "startup_india"; 
 
 $conn = new mysqli($host, $username, $password, $database);
 
@@ -168,6 +168,7 @@ $result = $conn->query($sql);
 // Close the database connection
 $conn->close();
 ?>
+
 
 
 
