@@ -11,6 +11,7 @@
         .sidebar-item:hover {
             background-color: rgba(59, 130, 246, 0.1);
         }
+        
         .sidebar-active {
             background-color: rgba(59, 130, 246, 0.2);
             border-left: 4px solid #3b82f6;
